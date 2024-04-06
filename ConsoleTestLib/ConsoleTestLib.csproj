@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>net45; netstandard2.1; net6.0; net8.0;</TargetFrameworks>
+		<TargetFrameworks>net46; netstandard2.1; net6.0; net8.0;</TargetFrameworks>
 		<Nullable>enable</Nullable>
 		<RootNamespace>Grille.ConsoleTestLib</RootNamespace>
 		<PackageLicenseFile>LICENSE</PackageLicenseFile>
@@ -10,10 +10,12 @@
 		<LangVersion>12</LangVersion>
 		<Authors>Paul Hirch</Authors>
 		<Description>Library to write standalone console programs for testing.</Description>
-		<Title>Grille.ConsoleTestLib</Title>
+		<Title>ConsoleTestLib</Title>
+		<PackageId>Grille.ConsoleTestLib</PackageId>
 		<Owners>Grille</Owners>
 		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
 		<Copyright>Copyright (c) 2024 Paul Hirch</Copyright>
+		<RepositoryUrl>https://github.com/Grille/ConsoleTestLib</RepositoryUrl>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

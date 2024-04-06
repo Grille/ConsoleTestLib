@@ -52,15 +52,15 @@ internal class ConsoleTestPrinter : ITestPrinter
         Write(": ");
         switch (test.Result)
         {
-            case TestResult.Success:
+            case TestState.Success:
                 WriteSucces("OK ");
                 WriteSucces(test.Message);
                 break;
-            case TestResult.Failure:
+            case TestState.Failure:
                 WriteFail("FAIL ");
                 WriteFail(test.Message);
                 break;
-            case TestResult.Error:
+            case TestState.Error:
                 WriteError("ERROR\n");
                 WriteError(test.Message);
                 break;

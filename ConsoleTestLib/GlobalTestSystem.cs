@@ -18,13 +18,15 @@ public static class GlobalTestSystem
 
     public static bool RethrowExceptions { get => System.RethrowExeptions; set => System.RethrowExeptions = value; }
 
+    public static bool ExecuteImmediately { get => System.ExecuteImmediately; set => System.ExecuteImmediately = value; }
+
     public static void Test(string name, Action action) => System.Test(name, action);
 
     public static void Test(string name, Action<TestCase> action) => System.Test(name, action);
 
-    public static void Test(string name, Func<TestResult> action) => System.Test(name, action);
+    public static void Test(string name, Func<TestState> action) => System.Test(name, action);
 
-    public static void Test(string name, Func<TestCase, TestResult> action) => System.Test(name, action);
+    public static void Test(string name, Func<TestCase, TestState> action) => System.Test(name, action);
 
     public static void Section(string name) => System.Section(name);
 

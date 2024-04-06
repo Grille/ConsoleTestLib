@@ -26,91 +26,118 @@ public class TestCase
         get => watch.Elapsed.TotalMilliseconds;
     }
 
-    public Task Task { get; }
+    private Action action;
 
-    public string Name { get; }
+    private Task task;
+
+    public string Name { get => CreateOptions.Name; }
+
+    public TestCaseCreateOptions CreateOptions { get; }
 
     public string Message { get; set; }
 
-    public TestResult Result { get; set; }
+    public TestState Result { get; set; }
 
     private ExceptionDispatchInfo? exceptionDispatchInfo;
 
-    private TestCase(TestCaseCreateInfo info)
+    private TestCase(TestCaseCreateOptions options)
     {
-        Name = info.Name;
+        CreateOptions = options;
         Message = string.Empty;
         watch = new();
-        Task = null!;
     }
 
-    public TestCase(TestCaseCreateInfo info, Action action) : this(info)
+    public TestCase(TestCaseCreateOptions options, Action action) : this(options)
     {
-        Task = CreateTask(action);
+        this.action = action;
+        CreateTask();
     }
 
-    public TestCase(TestCaseCreateInfo info, Action<TestCase> action) : this(info)
+    public TestCase(TestCaseCreateOptions options, Action<TestCase> action) : this(options)
     {
-        Task = CreateTask(() => action(this));
+        this.action = () => action(this);
+        CreateTask();
     }
 
-    public TestCase(TestCaseCreateInfo info, Func<TestResult> action) : this(info)
+    public TestCase(TestCaseCreateOptions options, Func<TestState> action) : this(options)
     {
-        Task = CreateTask(() => Result = action());
+
+        this.action = () => Result = action();
+        CreateTask();
     }
 
-    public TestCase(TestCaseCreateInfo info, Func<TestCase, TestResult> action) : this(info)
+    public TestCase(TestCaseCreateOptions options, Func<TestCase, TestState> action) : this(options)
     {
-        Task = CreateTask(() => Result = action(this));
+        this.action = () => Result = action(this);
+        CreateTask();
     }
 
-    private Task CreateTask(Action action)
+    private void CreateTask()
     {
-        return new Task(() =>
+        if (CreateOptions.ExecuteImmediately)
         {
-            watch.Start();
-            try
-            {
-                action();
-                if (Result == TestResult.None)
-                {
-                    Result = TestResult.Success;
-                }
-            }
-            catch (TestSuccessException e)
-            {
-                Message = e.Message;
-                Result = TestResult.Success;
-            }
-            catch (TestFailException e)
-            {
-                Message = e.Message;
-                Result = TestResult.Failure;
-            }
-            catch (Exception e)
-            {
-                Message = e.ToString();
-                Result = TestResult.Error;
+            task = Task.CompletedTask;
+            Run();
+            CreateOptions.Printer.PrintTest(this);
+        }
+        else
+        {
+            task = new Task(Run, TaskCreationOptions.PreferFairness);
+        }
+    }
 
-                exceptionDispatchInfo = ExceptionDispatchInfo.Capture(e);
+    private void Run()
+    {
+        watch.Start();
+        try
+        {
+            action();
+            if (Result == TestState.None)
+            {
+                Result = TestState.Success;
             }
-            watch.Stop();
-        }, TaskCreationOptions.PreferFairness);
+        }
+        catch (TestSuccessException e)
+        {
+            Message = e.Message;
+            Result = TestState.Success;
+        }
+        catch (TestFailException e)
+        {
+            Message = e.Message;
+            Result = TestState.Failure;
+        }
+        catch (Exception e)
+        {
+            Message = e.ToString();
+            Result = TestState.Error;
+
+            exceptionDispatchInfo = ExceptionDispatchInfo.Capture(e);
+
+            if (CreateOptions.ExecuteImmediately && CreateOptions.RethrowExeptions)
+            {
+                throw;
+            }
+        }
+        watch.Stop();
     }
 
     public void Start()
     {
-        Task.Start();
+        if (!task.IsCompleted)
+        {
+            task.Start();
+        }
     }
 
     public void RunSynchronously()
     {
-        Task.RunSynchronously();
+        task.RunSynchronously();
     }
 
     public void Wait()
     {
-        Task.Wait();
+        task.Wait();
     }
 
     public void Rethrow()

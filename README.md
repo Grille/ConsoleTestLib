@@ -1,9 +1,14 @@
 # ConsoleTestLib
 Library to write standalone console programs for testing.
-This library is heavily parallelized, so you should be careful what you capture inside the function bodys.
+
+## Disclaimer 
+I created this as a private experiment, you probably shouldn’t use this over something proper like XUnit
 
 ## Example
 ```cs
+using static Grille.ConsoleTestLib.GlobalTestSystem;
+using static Grille.ConsoleTestLib.Asserts;
+
 int i = 0;
 
 Test($"value on task create '{i}'", () =>

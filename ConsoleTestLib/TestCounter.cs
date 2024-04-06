@@ -15,17 +15,17 @@ public struct TestCounter
     public int Failure { get; private set; }
     public int Error { get; private set; }
 
-    public void Result(TestResult result)
+    public void Result(TestState result)
     {
         switch (result)
         {
-            case TestResult.Success:
+            case TestState.Success:
                 Success++;
                 break;
-            case TestResult.Failure:
+            case TestState.Failure:
                 Failure++;
                 break;
-            case TestResult.Error:
+            case TestState.Error:
                 Error++;
                 break;
             default:

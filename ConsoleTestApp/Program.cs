@@ -9,7 +9,8 @@ internal class Program
 {
     static void Main(string[] args)
     {
-        RethrowExceptions = false;
+        RethrowExceptions = true;
+        ExecuteImmediately = true;
 
         int i = 0;
 
@@ -42,17 +43,17 @@ internal class Program
         });
         Test("async_test_2", () =>
         {
-            Task.Delay(4000).Wait();
+            Task.Delay(400).Wait();
             Succes($"{sw.ElapsedMilliseconds}ms");
         });
         Test("async_test_3", () =>
         {
-            Task.Delay(4000).Wait();
+            Task.Delay(400).Wait();
             Succes($"{sw.ElapsedMilliseconds}ms");
         });
         Test("async_test_4", () =>
         {
-            Task.Delay(2000).Wait();
+            Task.Delay(200).Wait();
             Succes($"{sw.ElapsedMilliseconds}ms");
         });
         Test("async_test_5", () =>
@@ -60,6 +61,6 @@ internal class Program
             Succes($"{sw.ElapsedMilliseconds}ms");
         });
 
-        RunTests();
+        //RunTests();
     }
 }

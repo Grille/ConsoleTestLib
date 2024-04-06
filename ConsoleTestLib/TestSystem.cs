@@ -10,6 +10,7 @@ namespace Grille.ConsoleTestLib;
 public class TestSystem
 {
     public bool RethrowExeptions { get; set; } = false;
+    public bool ExecuteImmediately { get; set; } = false;
 
     private Section section;
     private List<Section> sections;
@@ -29,22 +30,28 @@ public class TestSystem
     public TestSystem() : this(new ConsoleTestPrinter())
     { }
 
-    private TestCaseCreateInfo CreateInfo(string name)
+    private TestCaseCreateOptions CreateInfo(string name)
     {
-        return new TestCaseCreateInfo(name);
+        return new TestCaseCreateOptions(name, RethrowExeptions, ExecuteImmediately, Printer);
     }
 
     public void Test(string name, Action action) => section.Add(new TestCase(CreateInfo(name), action));
 
     public void Test(string name, Action<TestCase> action) => section.Add(new TestCase(CreateInfo(name), action));
 
-    public void Test(string name, Func<TestResult> action) => section.Add(new TestCase(CreateInfo(name), action));
+    public void Test(string name, Func<TestState> action) => section.Add(new TestCase(CreateInfo(name), action));
 
-    public void Test(string name, Func<TestCase, TestResult> action) => section.Add(new TestCase(CreateInfo(name), action));
+    public void Test(string name, Func<TestCase, TestState> action) => section.Add(new TestCase(CreateInfo(name), action));
 
     public void Section(string name) {
         section = new Section(name);
         sections.Add(section);
+
+        if (ExecuteImmediately)
+        {
+            Printer.PrintSectionEnd(section);
+            Printer.PrintSectionBegin(section);
+        }
     }
 
     public void RunTests()
