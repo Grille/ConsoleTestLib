@@ -1,8 +1,14 @@
 # ConsoleTestLib
 Library to write standalone console programs for testing.
+This library relies heavily on delayed execution of lambdas, so knowledge how variable capture works is useful.
+
+## Debugging
+The parallel nature of RunTests() can lead to problems while debugging.
+Its better to use RunTestsSynchronously() for that purpose.
 
 ## Disclaimer 
-I created this as a private experiment, you probably shouldn’t use this over something proper like XUnit
+I created this as a private experiment, you probably shouldn't use this over something proper like XUnit.
+Also, I don't necessarily care much about braking changes here, so keep that in mind before updating.
 
 ## Example
 ```cs

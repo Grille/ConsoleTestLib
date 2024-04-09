@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Grille.ConsoleTestLib.Utils;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,7 +9,7 @@ namespace Grille.ConsoleTestLib;
 
 public class Asserts
 {
-    public static void AssertException<T>(Action action) where T : Exception
+    public static T AssertException<T>(Action action) where T : Exception
     {
         try
         {
@@ -16,65 +17,93 @@ public class Asserts
         }
         catch (T err)
         {
-            throw new TestSuccessException($"{err.Message}");
+            return err;
         }
-        throw new TestFailException($"expected Exception not thrown");
+        throw new TestFailedException($"Expected exception '{typeof(T).Name}' not thrown.");
     }
 
-    public static bool IsIListEqual<T>(IList<T> array1, IList<T> array2)
-    {
-        if (array1.Count != array2.Count)
-            return false;
-        for (int i = 0; i < array2.Count; i++)
-            if (!array2[i].Equals(array1[i]))
-                return false;
-        return true;
-    }
-
-    public static string IListToString<T>(IList<T> array)
-    {
-        var sb = new StringBuilder();
-        sb.Append($"[{array.Count}]{{");
-        int size = Math.Min(array.Count, 16);
-        for (int i = 0; i < size; i++)
-        {
-            sb.Append(array[i]);
-            if (i < size - 1)
-                sb.Append(",");
-            else if (size < array.Count)
-                sb.Append("...");
-        }
-        sb.Append("}");
-        return sb.ToString();
-    }
 
     public static void Assert(bool value, string message)
     {
         if (!value)
-            throw new TestFailException(message);
+            throw new TestFailedException(message);
     }
 
-    public static void AssertValueIsNotEqual<T>(T value, T expected, string msg = "")
+    public static void AssertValueIsNotEqual<T>(T expected, T actual) => AssertIsEqual(expected, actual, true, null, null);
+
+    public static void AssertValueIsNotEqual<T>(T expected, T actual, Func<T, string>? toString, string? message) => AssertIsEqual(expected, actual, true, toString, message);
+
+    public static void AssertValueIsNotEqual<T>(T expected, T actual, string? message) => AssertIsEqual(expected, actual, true, null, message);
+
+    public static void AssertValueIsNotEqual<T>(T expected, T actual, Func<T,string>? toString) => AssertIsEqual(expected, actual, true, toString, null);
+
+
+    public static void AssertValueIsEqual<T>(T expected, T actual) => AssertIsEqual(expected, actual, false, null, null);
+
+    public static void AssertValueIsEqual<T>(T expected, T actual, string? message) => AssertIsEqual(expected, actual, false, null, message);
+
+    public static void AssertValueIsEqual<T>(T expected, T actual, Func<T, string>? toString) => AssertIsEqual(expected, actual, false, toString, null);
+
+    public static void AssertValueIsEqual<T>(T expected, T actual, Func<T, string>? toString, string? message) => AssertIsEqual(expected, actual, false, toString, message);
+
+
+    private static void AssertIsEqual<T>(T expected, T actual, bool invert, Func<T, string>? toString, string? message)
     {
-        if (value.Equals(expected))
-            throw new TestFailException($"value: {value} == expected: {expected} {msg}");
+        bool equal = expected.Equals(actual);
+        bool fail = !equal ^ invert;
+        if (fail)
+        {
+            var sb = new StringBuilder();
+            if (invert)
+            {
+                sb.Append("Not ");
+            }
+            sb.Append("Expected: ");
+            sb.Append(toString == null ? expected.ToString() : toString(expected));
+            sb.Append(" Actual: ");
+            sb.Append(toString == null ? actual.ToString() : toString(actual));
+            if (!string.IsNullOrEmpty(message))
+            {
+                sb.Append(" ");
+                sb.Append(message);
+            }
+            throw new TestFailedCompareException(expected, actual, sb.ToString());
+        }
     }
 
-    public static void AssertValueIsEqual<T>(T value, T expected, string msg = "")
+    public static void AssertIListIsEqual<T>(IList<T> expected, IList<T> actual)
     {
-        if (!value.Equals(expected))
-            throw new TestFailException($"value: {value} != expected: {expected} {msg}");
+        AssertIListIsEqual(expected, actual, MessageUtils.IListToString, null);
     }
 
-    public static void AssertIListIsEqual<T>(IList<T> refarray0, IList<T> dataarray1, string msg = "") where T : unmanaged
+    public static void AssertIListIsEqual<T>(IList<T> expected, IList<T> actual, string message)
     {
-        if (!IsIListEqual(refarray0, dataarray1))
-            throw new TestFailException($"expected: {IListToString(refarray0)} data: {IListToString(dataarray1)} {msg}");
+        AssertIListIsEqual(expected, actual, MessageUtils.IListToString, message);
+    }
+
+    public static void AssertIListIsEqual<T>(IList<T> expected, IList<T> actual, Func<IList<T>, string> toString)
+    {
+        AssertIListIsEqual(expected, actual, toString, null);
+    }
+
+    public static void AssertIListIsEqual<T>(IList<T> expected, IList<T> actual, Func<IList<T>, string> toString, string? message)
+    {
+        if (!CompareUtils.IsIListEqual(expected, actual))
+        {
+            var sb = new StringBuilder();
+            sb.Append($"Expected: {toString(expected)} == Actual: {toString(actual)}");
+            if (!string.IsNullOrEmpty(message))
+            {
+                sb.Append(" ");
+                sb.Append(message);
+            }
+            throw new TestFailedCompareException(expected, actual, sb.ToString());
+        }
     }
 
     public static void Fail()
     {
-        throw new TestFailException();
+        throw new TestFailedException();
     }
 
     public static void Succes()
@@ -82,13 +111,13 @@ public class Asserts
         throw new TestSuccessException();
     }
 
-    public static void Fail(string msg)
+    public static void Fail(string message)
     {
-        throw new TestFailException(msg);
+        throw new TestFailedException(message);
     }
 
-    public static void Succes(string msg)
+    public static void Succes(string message)
     {
-        throw new TestSuccessException(msg);
+        throw new TestSuccessException(message);
     }
 }

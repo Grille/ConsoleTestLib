@@ -36,7 +36,9 @@ public class TestCase
 
     public string Message { get; set; }
 
-    public TestState Result { get; set; }
+    public TestStatus Status { get; set; }
+
+    public Exception? Exception { get; private set; }    
 
     private ExceptionDispatchInfo? exceptionDispatchInfo;
 
@@ -59,16 +61,16 @@ public class TestCase
         CreateTask();
     }
 
-    public TestCase(TestCaseCreateOptions options, Func<TestState> action) : this(options)
+    public TestCase(TestCaseCreateOptions options, Func<TestStatus> action) : this(options)
     {
 
-        this.action = () => Result = action();
+        this.action = () => Status = action();
         CreateTask();
     }
 
-    public TestCase(TestCaseCreateOptions options, Func<TestCase, TestState> action) : this(options)
+    public TestCase(TestCaseCreateOptions options, Func<TestCase, TestStatus> action) : this(options)
     {
-        this.action = () => Result = action(this);
+        this.action = () => Status = action(this);
         CreateTask();
     }
 
@@ -78,7 +80,7 @@ public class TestCase
         {
             task = Task.CompletedTask;
             Run();
-            CreateOptions.Printer.PrintTest(this);
+            //CreateOptions.Printer.PrintTest(this);
         }
         else
         {
@@ -92,25 +94,41 @@ public class TestCase
         try
         {
             action();
-            if (Result == TestState.None)
+            if (Status == TestStatus.None)
             {
-                Result = TestState.Success;
+                Status = TestStatus.Success;
+            }
+            else if (Status == TestStatus.Error)
+            {
+                throw new Exception("Status on exit is Error.");
+            }
+            else if ((int)Status > 3 || (int)Status < 0)
+            {
+                throw new Exception($"Invalid status '{Status}' on exit.");
             }
         }
         catch (TestSuccessException e)
         {
+            Exception = e;
             Message = e.Message;
-            Result = TestState.Success;
+            Status = TestStatus.Success;
         }
-        catch (TestFailException e)
+        catch (TestFailedException e)
         {
+            Exception = e;
             Message = e.Message;
-            Result = TestState.Failure;
+            Status = TestStatus.Failure;
+
+            if (CreateOptions.ExecuteImmediately && CreateOptions.RethrowFailed)
+            {
+                throw;
+            }
         }
         catch (Exception e)
         {
-            Message = e.ToString();
-            Result = TestState.Error;
+            Exception = e;
+            Message = e.Message;
+            Status = TestStatus.Error;
 
             exceptionDispatchInfo = ExceptionDispatchInfo.Capture(e);
 
@@ -119,9 +137,11 @@ public class TestCase
                 throw;
             }
         }
+        
         watch.Stop();
     }
 
+    /// <inheritdoc cref="Task.Start()"/>
     public void Start()
     {
         if (!task.IsCompleted)
@@ -130,11 +150,16 @@ public class TestCase
         }
     }
 
+    /// <inheritdoc cref="Task.RunSynchronously()"/>
     public void RunSynchronously()
     {
-        task.RunSynchronously();
+        if (!task.IsCompleted)
+        {
+            task.RunSynchronously();
+        }
     }
 
+    /// <inheritdoc cref="Task.Wait()"/>
     public void Wait()
     {
         task.Wait();

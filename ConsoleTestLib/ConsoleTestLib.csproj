@@ -6,7 +6,7 @@
 		<RootNamespace>Grille.ConsoleTestLib</RootNamespace>
 		<PackageLicenseFile>LICENSE</PackageLicenseFile>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
-		<Version>0.1.0</Version>
+		<Version>0.4.0</Version>
 		<LangVersion>12</LangVersion>
 		<Authors>Paul Hirch</Authors>
 		<Description>Library to write standalone console programs for testing.</Description>
@@ -30,7 +30,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<None Include="..\README.md" Pack="true" PackagePath="\"/>
-		<None Include="..\LICENSE" Pack="true" PackagePath="\"/>
+		<None Include="..\README.md" Pack="true" PackagePath="\" />
+		<None Include="..\LICENSE" Pack="true" PackagePath="\" />
 	</ItemGroup>
 </Project>

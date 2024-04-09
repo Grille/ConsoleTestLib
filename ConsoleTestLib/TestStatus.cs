@@ -6,10 +6,9 @@ using System.Threading.Tasks;
 
 namespace Grille.ConsoleTestLib;
 
-public enum TestState
+public enum TestStatus
 {
     None,
-    Running,
     Success,
     Failure,
     Error,

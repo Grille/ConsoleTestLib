@@ -6,19 +6,38 @@ using System.Threading.Tasks;
 
 namespace Grille.ConsoleTestLib;
 
-public class TestFailException : Exception
+public class TestFailedException : Exception
 {
-    public TestFailException() : base()
+    public TestFailedException() : base()
     {
 
     }
-    public TestFailException(string msg) : base(msg)
+    public TestFailedException(string msg) : base(msg)
     {
 
     }
-    public TestFailException(string msg, Exception exception) : base(msg, exception)
+    public TestFailedException(string msg, Exception exception) : base(msg, exception)
     {
 
+    }
+}
+
+
+public class TestFailedCompareException : TestFailedException
+{
+    public object Expected { get; }
+    public object Actual { get; }
+
+    public TestFailedCompareException(object expected, object actual) : base()
+    {
+        Expected = expected;
+        Actual = actual;
+    }
+
+    public TestFailedCompareException(object expected, object actual, string message) : base(message)
+    {
+        Expected = expected;
+        Actual = actual;
     }
 }
 

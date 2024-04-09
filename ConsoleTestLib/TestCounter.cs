@@ -15,17 +15,17 @@ public struct TestCounter
     public int Failure { get; private set; }
     public int Error { get; private set; }
 
-    public void Result(TestState result)
+    public void Result(TestStatus result)
     {
         switch (result)
         {
-            case TestState.Success:
+            case TestStatus.Success:
                 Success++;
                 break;
-            case TestState.Failure:
+            case TestStatus.Failure:
                 Failure++;
                 break;
-            case TestState.Error:
+            case TestStatus.Error:
                 Error++;
                 break;
             default:
@@ -39,7 +39,7 @@ public struct TestCounter
     public void Count(Section section)
     {
         foreach (var test in section.TestCases) {
-            Result(test.Result);
+            Result(test.Status);
         }
     }
 }

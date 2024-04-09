@@ -14,9 +14,7 @@ public interface ITestPrinter
 
     public void PrintSectionEnd(Section section);
 
-    public void Print(ICollection<Section> sections);
-
-    public void PrintSumary(TestCounter counter);
+    public void PrintSummary(TestCounter counter);
 }
 
 public enum ITestPrinterHighlight
