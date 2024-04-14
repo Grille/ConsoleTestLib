@@ -6,12 +6,13 @@ using System.Threading.Tasks;
 
 namespace Grille.ConsoleTestLib;
 
-public struct TestCounter
+public class TestSummary
 {
     public int Total { get; private set; }
 
     public int Unexecuted { get; private set; }
     public int Success { get; private set; }
+    public int Warning { get; private set; }
     public int Failure { get; private set; }
     public int Error { get; private set; }
 
@@ -21,6 +22,9 @@ public struct TestCounter
         {
             case TestStatus.Success:
                 Success++;
+                break;
+            case TestStatus.Warning:
+                Warning++;
                 break;
             case TestStatus.Failure:
                 Failure++;

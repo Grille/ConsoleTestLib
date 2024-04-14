@@ -13,7 +13,8 @@ Also, I don't necessarily care much about braking changes here, so keep that in 
 ## Example
 ```cs
 using static Grille.ConsoleTestLib.GlobalTestSystem;
-using static Grille.ConsoleTestLib.Asserts;
+using static Grille.ConsoleTestLib.TestResult;
+using Grille.ConsoleTestLib.Asserts;
 
 int i = 0;
 

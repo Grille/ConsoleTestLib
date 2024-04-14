@@ -12,14 +12,23 @@ namespace Grille.ConsoleTestLib;
 public class StandardConsolePrinter : ITestPrinter
 {
     public string SuccesPrefix { get; set; } = "OK";
-    public string FailPrefix { get; set; } = "FAIL";
+    public string WarnPrefix { get; set; } = "WARN";
+    public string FailedPrefix { get; set; } = "FAIL";
     public string ErrorPrefix { get; set; } = "ERROR";
 
+    public string Seperator { get; set; } = ":";
+
+    public bool PrintFailAsException { get; set; } = false;
     public bool PrintFullExceptions { get; set; } = true;
+
+    public bool ColoredNames { get; set; } = false;
+    public bool ColoredMessages { get; set; } = true;
+    public bool ColoredPrefixes { get; set; } = true;
 
     public ConsoleColor DefaultColor { get; set; } = ConsoleColor.Gray;
     public ConsoleColor SuccesColor { get; set; } = ConsoleColor.Green;
-    public ConsoleColor FailColor { get; set; } = ConsoleColor.Magenta;
+    public ConsoleColor WarnColor { get; set; } = ConsoleColor.DarkYellow;
+    public ConsoleColor FailedColor { get; set; } = ConsoleColor.Magenta;
     public ConsoleColor ErrorColor { get; set; } = ConsoleColor.Red;
     public ConsoleColor TitleColor { get; set; } = ConsoleColor.Cyan;
 
@@ -35,28 +44,15 @@ public class StandardConsolePrinter : ITestPrinter
 
         Console.ForegroundColor = color;
         Console.Write(msg);
-
         Console.ForegroundColor = bcolor;
     }
 
-    public void WriteTitle(string msg)
+    public void Write(string msg, ConsoleColor color, bool useColor)
     {
-        Write(msg, TitleColor);
-    }
-
-    public void WriteSucces(string msg)
-    {
-        Write(msg, SuccesColor);
-    }
-
-    public void WriteFail(string msg)
-    {
-        Write(msg, FailColor);
-    }
-
-    public void WriteError(string msg)
-    {
-        Write(msg, ErrorColor);
+        if (useColor)
+            Write(msg, color);
+        else
+            Write(msg);
     }
 
     private void WriteSeperator(string message)
@@ -65,62 +61,68 @@ public class StandardConsolePrinter : ITestPrinter
             return;
 
         if (message.Contains('\n'))
-        {
             Write("\n");
-        }
         else
-        {
             Write(" ");
-        }
     }
 
     public virtual void PrintTest(TestCase test)
     {
-        Write(test.Name);
-        Write(": ");
-        switch (test.Status)
+        var color = test.Status switch
         {
-            case TestStatus.Success:
-                WriteSucces(SuccesPrefix);
-                WriteSeperator(test.Message);
-                WriteSucces(test.Message);
-                break;
-            case TestStatus.Failure:
-                WriteFail(FailPrefix);
-                WriteSeperator(test.Message);
-                WriteFail(test.Message);
-                break;
-            case TestStatus.Error:
-                WriteError(ErrorPrefix);
-                string message;
-                if (PrintFullExceptions)
-                {
-                    message = test.Exception != null ? test.Exception.ToString() : "null";
-                }
-                else
-                {
-                    message = test.Message;
-                }
-                WriteSeperator(message);
-                WriteError(message);
-                break;
-            default:
-                WriteError(test.Status.ToString());
-                WriteSeperator(test.Message);
-                WriteError(test.Message);
-                break;
+            TestStatus.Success => SuccesColor,
+            TestStatus.Error => ErrorColor,
+            TestStatus.Warning => WarnColor,
+            TestStatus.Failure => FailedColor,
+            _ => ErrorColor,
+        };
+
+        var prefix = test.Status switch
+        {
+            TestStatus.Success => SuccesPrefix,
+            TestStatus.Error => ErrorPrefix,
+            TestStatus.Warning => WarnPrefix,
+            TestStatus.Failure => FailedPrefix,
+            _ => string.Empty,
+        };
+
+        Write(test.Name, color, ColoredNames);
+        Write(Seperator, color, ColoredNames);
+
+        if (!string.IsNullOrEmpty(prefix))
+        {
+            Write(" ");
+            Write(prefix, color, ColoredPrefixes);
         }
+
+        string message;
+        if (test.Status == TestStatus.Failure && PrintFailAsException)
+            message = test.Exception != null ? test.Exception.ToString() : test.Message;
+        else if (test.Status == TestStatus.Error && PrintFullExceptions)
+            message = test.Exception != null ? test.Exception.ToString() : "null";
+        else
+            message = test.Message;
+
+        WriteSeperator(message);
+        Write(message, color, ColoredMessages);
+
         Write("\n");
     }
 
     public virtual void PrintSectionBegin(Section section)
     {
-        WriteTitle(section.Name);
+        if (section.TestCases.Count == 0)
+            return;
+
+        Write(section.Name, TitleColor);
         Write("\n");
     }
 
     public virtual void PrintSectionEnd(Section section)
     {
+        if (section.TestCases.Count == 0)
+            return;
+
         Write("\n");
     }
 
@@ -145,13 +147,13 @@ public class StandardConsolePrinter : ITestPrinter
         }
     }
 
-    public virtual void PrintSummary(TestCounter counter)
+    public virtual void PrintSummary(TestSummary counter)
     {
-        WriteTitle("Results:\n");
+        Write("Results:\n", TitleColor);
 
         Write($"Testcases: {counter.Total}\n");
-        Write($"* Success: {counter.Success}\n");
-        Write($"* failure: {counter.Failure+counter.Error}\n");
+        Write($"* Success: {counter.Success + counter.Warning}\n");
+        Write($"* failure: {counter.Failure + counter.Error}\n");
     }
 }
 

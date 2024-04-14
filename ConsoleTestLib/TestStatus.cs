@@ -10,6 +10,7 @@ public enum TestStatus
 {
     None,
     Success,
+    Warning,
     Failure,
     Error,
 }

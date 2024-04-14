@@ -11,6 +11,9 @@ using System.Xml.Linq;
 
 namespace Grille.ConsoleTestLib;
 
+#if NET6_0_OR_GREATER
+[StackTraceHidden]
+#endif
 public class TestCase
 {
     private Stopwatch watch;
@@ -98,28 +101,18 @@ public class TestCase
             {
                 Status = TestStatus.Success;
             }
-            else if (Status == TestStatus.Error)
+            if (string.IsNullOrEmpty(Message) && Status != TestStatus.Success)
             {
-                throw new Exception("Status on exit is Error.");
-            }
-            else if ((int)Status > 3 || (int)Status < 0)
-            {
-                throw new Exception($"Invalid status '{Status}' on exit.");
+                Message = $"Final Status: {Status}";
             }
         }
-        catch (TestSuccessException e)
+        catch (TestResultException e)
         {
             Exception = e;
             Message = e.Message;
-            Status = TestStatus.Success;
-        }
-        catch (TestFailedException e)
-        {
-            Exception = e;
-            Message = e.Message;
-            Status = TestStatus.Failure;
+            Status = e.Status;
 
-            if (CreateOptions.ExecuteImmediately && CreateOptions.RethrowFailed)
+            if (Status == TestStatus.Failure && CreateOptions.ExecuteImmediately && CreateOptions.RethrowFailed)
             {
                 throw;
             }

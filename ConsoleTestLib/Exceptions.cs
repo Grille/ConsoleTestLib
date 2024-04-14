@@ -6,22 +6,26 @@ using System.Threading.Tasks;
 
 namespace Grille.ConsoleTestLib;
 
-public class TestFailedException : Exception
+public class TestResultException : Exception
 {
-    public TestFailedException() : base()
-    {
+    public TestStatus Status { get; }
 
+    public TestResultException(string msg, TestStatus status) : base(msg == null ? string.Empty : msg)
+    {
+        Status = status;
     }
-    public TestFailedException(string msg) : base(msg)
+    public TestResultException(string msg, TestStatus status, Exception exception) : base(msg == null ? string.Empty : msg, exception)
     {
-
-    }
-    public TestFailedException(string msg, Exception exception) : base(msg, exception)
-    {
-
+        Status = status;
     }
 }
 
+public class TestFailedException : TestResultException
+{
+    public TestFailedException() : base(string.Empty, TestStatus.Failure) { }
+    public TestFailedException(string msg) : base(msg, TestStatus.Failure) { }
+    public TestFailedException(string msg, Exception exception) : base(msg, TestStatus.Failure, exception) { }
+}
 
 public class TestFailedCompareException : TestFailedException
 {
@@ -41,18 +45,16 @@ public class TestFailedCompareException : TestFailedException
     }
 }
 
-public class TestSuccessException : Exception
+public class TestWarnException : TestResultException
 {
-    public TestSuccessException() : base()
-    {
+    public TestWarnException() : base(string.Empty, TestStatus.Warning) { }
+    public TestWarnException(string msg) : base(msg, TestStatus.Warning) { }
+    public TestWarnException(string msg, Exception exception) : base(msg, TestStatus.Warning, exception) { }
+}
 
-    }
-    public TestSuccessException(string msg) : base(msg)
-    {
-
-    }
-    public TestSuccessException(string msg, Exception exception) : base(msg, exception)
-    {
-
-    }
+public class TestSuccessException : TestResultException
+{
+    public TestSuccessException() : base(string.Empty, TestStatus.Success) { }
+    public TestSuccessException(string msg) : base(msg, TestStatus.Success) { }
+    public TestSuccessException(string msg, Exception exception) : base(msg, TestStatus.Success, exception) { }
 }

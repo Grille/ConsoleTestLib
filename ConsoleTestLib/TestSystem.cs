@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -36,7 +37,7 @@ public class TestSystem
     private Section section;
     private List<Section> sections;
 
-    public ICollection<Section> Sections => sections.AsReadOnly();
+    public ReadOnlyCollection<Section> Sections => sections.AsReadOnly();
 
     public ITestPrinter Printer { get; set; }
 
@@ -79,7 +80,7 @@ public class TestSystem
             section.Start();
         }
 
-        var counter = new TestCounter();
+        var counter = new TestSummary();
 
         foreach (var section in sections)
         {
@@ -103,7 +104,7 @@ public class TestSystem
     /// </summary>
     public void RunTestsSynchronously()
     {
-        var counter = new TestCounter();
+        var counter = new TestSummary();
 
         foreach (var section in sections)
         {

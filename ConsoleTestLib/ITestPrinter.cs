@@ -14,7 +14,7 @@ public interface ITestPrinter
 
     public void PrintSectionEnd(Section section);
 
-    public void PrintSummary(TestCounter counter);
+    public void PrintSummary(TestSummary counter);
 }
 
 public enum ITestPrinterHighlight
