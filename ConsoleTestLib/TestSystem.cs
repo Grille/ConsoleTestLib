@@ -6,27 +6,38 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Grille.ConsoleTestLib.IO;
+
 namespace Grille.ConsoleTestLib;
 
 public class TestSystem
 {
     /// <summary>
-    /// Rethows all exceptions except TestFailedExceptions.
+    /// Rethows all exceptions except TestFailedExceptions.<br/><br/>
+    /// Default value is <see langword="false"/>
     /// </summary>
     public bool RethrowExeptions { get; set; } = false;
 
     /// <summary>
-    /// Rethow all TestFailedException, usually thrown by assert statements.
+    /// Rethow all TestFailedException, usually thrown by assert statements.<br/><br/>
+    /// Default value is <see langword="false"/>
     /// </summary>
     public bool RethrowFailed { get; set; } = false;
 
     /// <summary>
-    /// Tests are immediately executed after being created, helpful for debugging.
+    /// Tests are immediately executed after being created, helpful for debugging.<br/><br/>
+    /// Default value is <see langword="false"/>
     /// </summary>
     public bool ExecuteImmediately { get; set; } = false;
 
     /// <summary>
-    /// Sets the Rethrow and ExecuteImmediately flags that are helpful while debugging, all flags can be set individually.
+    /// Default value is <see langword="true"/>
+    /// </summary>
+    public bool RunAsync { get; set; } = true;
+
+    /// <summary>
+    /// Sets the Rethrow and ExecuteImmediately flags that are helpful while debugging, all flags can be set individually.<br/><br/>
+    /// Default value is <see langword="false"/>
     /// </summary>
     public bool DebugMode
     {
@@ -49,12 +60,11 @@ public class TestSystem
         Printer = printer;
     }
 
-    public TestSystem() : this(new StandardConsolePrinter())
-    { }
+    public TestSystem() : this(new DefaultTestPrinter()) { }
 
     private TestCaseCreateOptions CreateInfo(string name)
     {
-        return new TestCaseCreateOptions(name, RethrowExeptions, RethrowFailed, ExecuteImmediately, Printer);
+        return new TestCaseCreateOptions(name, RethrowExeptions, RethrowFailed, ExecuteImmediately);
     }
 
     public void Test(string name, Action action) => section.Add(new TestCase(CreateInfo(name), action));
@@ -70,28 +80,22 @@ public class TestSystem
         sections.Add(section);
     }
 
-    /// <summary>
-    /// Run all enqueued tests parallel.
-    /// </summary>
     public void RunTests()
     {
-        foreach (var section in sections)
+        var task = Printer.PrintSectionsAsync(sections);
+
+        if (RunAsync)
         {
-            section.Start();
+            RunTestsAsync();
+        }
+        else
+        {
+            RunTestsSynchronously();
         }
 
-        var counter = new TestSummary();
+        task.Wait();
 
-        foreach (var section in sections)
-        {
-            if (section.TestCases.Count > 0)
-            {
-                section.Print(Printer);
-                counter.Count(section);
-            }
-        }
-
-        Printer.PrintSummary(counter);
+        Printer.PrintSummary(TestSummary.NewCount(sections));
 
         if (RethrowExeptions)
         {
@@ -100,23 +104,24 @@ public class TestSystem
     }
 
     /// <summary>
-    /// Run all enqueued tests synchronous.
+    /// Run all enqueued tests parallel.
     /// </summary>
-    public void RunTestsSynchronously()
+    private void RunTestsAsync()
     {
-        var counter = new TestSummary();
-
         foreach (var section in sections)
         {
-            section.RunSynchronouslyAndPrint(Printer);
-            counter.Count(section);
+            section.RunAsync();
         }
+    }
 
-        Printer.PrintSummary(counter);
-
-        if (RethrowExeptions)
+    /// <summary>
+    /// Run all enqueued tests synchronous.
+    /// </summary>
+    private void RunTestsSynchronously()
+    {
+        foreach (var section in sections)
         {
-            Rethrow();
+            section.RunSynchronously();
         }
     }
 

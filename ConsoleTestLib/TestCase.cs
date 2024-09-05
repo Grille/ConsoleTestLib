@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
@@ -16,18 +17,7 @@ namespace Grille.ConsoleTestLib;
 #endif
 public class TestCase
 {
-    private Stopwatch watch;
-
-    public TimeSpan Elapsed
-    {
-        get => watch.Elapsed;
-    }
-
-
-    public double ElapsedMilliseconds
-    {
-        get => watch.Elapsed.TotalMilliseconds;
-    }
+    public TestCaseDates Dates { get; private set; }
 
     private Action action;
 
@@ -35,7 +25,7 @@ public class TestCase
 
     public string Name { get => CreateOptions.Name; }
 
-    public TestCaseCreateOptions CreateOptions { get; }
+    public TestCaseCreateOptions CreateOptions { get; private set; }
 
     public string Message { get; set; }
 
@@ -45,65 +35,69 @@ public class TestCase
 
     private ExceptionDispatchInfo? exceptionDispatchInfo;
 
-    private TestCase(TestCaseCreateOptions options)
+    public TestCase(TestCaseCreateOptions options, Action action)
     {
-        CreateOptions = options;
-        Message = string.Empty;
-        watch = new();
-    }
+        Setup(options);
 
-    public TestCase(TestCaseCreateOptions options, Action action) : this(options)
-    {
         this.action = action;
         CreateTask();
     }
 
-    public TestCase(TestCaseCreateOptions options, Action<TestCase> action) : this(options)
+    public TestCase(TestCaseCreateOptions options, Action<TestCase> action)
     {
+        Setup(options);
+
         this.action = () => action(this);
         CreateTask();
     }
 
-    public TestCase(TestCaseCreateOptions options, Func<TestStatus> action) : this(options)
+    public TestCase(TestCaseCreateOptions options, Func<TestStatus> action)
     {
+        Setup(options);
 
         this.action = () => Status = action();
         CreateTask();
     }
 
-    public TestCase(TestCaseCreateOptions options, Func<TestCase, TestStatus> action) : this(options)
+    public TestCase(TestCaseCreateOptions options, Func<TestCase, TestStatus> action)
     {
+        Setup(options);
+
         this.action = () => Status = action(this);
         CreateTask();
     }
 
+    [MemberNotNull(nameof(CreateOptions), nameof(Message), nameof(Dates))]
+    private void Setup(TestCaseCreateOptions options)
+    {
+        Dates = new TestCaseDates();
+        CreateOptions = options;
+        Message = string.Empty;
+    }
+
+    [MemberNotNull(nameof(task))]
     private void CreateTask()
     {
         if (CreateOptions.ExecuteImmediately)
         {
             task = Task.CompletedTask;
-            Run();
-            //CreateOptions.Printer.PrintTest(this);
+            Execute();
         }
         else
         {
-            task = new Task(Run, TaskCreationOptions.PreferFairness);
+            task = new Task(Execute, TaskCreationOptions.PreferFairness);
         }
     }
 
-    private void Run()
+    private void Execute()
     {
-        watch.Start();
+        Dates.StartNow();
         try
         {
             action();
             if (Status == TestStatus.None)
             {
                 Status = TestStatus.Success;
-            }
-            if (string.IsNullOrEmpty(Message) && Status != TestStatus.Success)
-            {
-                Message = $"Final Status: {Status}";
             }
         }
         catch (TestResultException e)
@@ -131,7 +125,7 @@ public class TestCase
             }
         }
         
-        watch.Stop();
+        Dates.EndNow();
     }
 
     /// <inheritdoc cref="Task.Start()"/>

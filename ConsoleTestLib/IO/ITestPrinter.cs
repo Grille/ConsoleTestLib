@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Grille.ConsoleTestLib;
+namespace Grille.ConsoleTestLib.IO;
 
 public interface ITestPrinter
 {
@@ -17,11 +17,3 @@ public interface ITestPrinter
     public void PrintSummary(TestSummary counter);
 }
 
-public enum ITestPrinterHighlight
-{
-    Text,
-    Title,
-    Succes,
-    Fail,
-    Error,
-}

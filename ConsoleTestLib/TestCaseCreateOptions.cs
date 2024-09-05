@@ -1,3 +1,5 @@
-﻿namespace Grille.ConsoleTestLib;
+﻿using Grille.ConsoleTestLib.IO;
 
-public record struct TestCaseCreateOptions(string Name, bool RethrowExeptions, bool RethrowFailed, bool ExecuteImmediately, ITestPrinter Printer) { }
+namespace Grille.ConsoleTestLib;
+
+public record struct TestCaseCreateOptions(string Name, bool RethrowExeptions, bool RethrowFailed, bool ExecuteImmediately);

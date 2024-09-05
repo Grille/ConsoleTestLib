@@ -3,24 +3,31 @@ using System.Threading.Tasks;
 
 using Grille.ConsoleTestLib;
 using System.Diagnostics;
+
 using Grille.ConsoleTestLib.Utils;
+using Grille.ConsoleTestLib.IO;
+using Grille.ConsoleTestLib.Asserts;
 
 using static Grille.ConsoleTestLib.GlobalTestSystem;
 using static Grille.ConsoleTestLib.TestResult;
-using static Grille.ConsoleTestLib.Asserts.Assert;
+using System.Reflection;
 
-//ExecuteImmediately = true;
+Console.WriteLine(Environment.Version);
+Console.WriteLine();
+
+ExecuteImmediately = false;
 RethrowExceptions = false;
 RethrowFailed = false;
+RunAsync = true;
 
-//ExecuteImmediately = true;
-
-Printer = new StandardConsolePrinter()
+Printer = new DefaultTestPrinter()
 {
+    PrintDates = false,
     ColoredNames = false,
     PrintFailAsException = false,
-    PrintFullExceptions = true,
+    PrintFullExceptions = false,
 };
+
 
 int i = 0;
 
@@ -56,15 +63,15 @@ Test($"test_return_fail", () =>
 
 Test($"read/write prefix", () =>
 {
-    IsEqual(0, long.MaxValue, "Value");
+    Assert.IsEqual(0, long.MaxValue, "Value");
 });
 Test($"read/write prefix", () =>
 {
-    IsEqual(0, long.MaxValue, "Value");
+    Assert.IsEqual(0, long.MaxValue, "Value");
 });
 Test($"read/write prefix", () =>
 {
-    IsEqual(0, long.MaxValue, "________________________________________________________");
+    Assert.IsEqual(0, long.MaxValue, "________________________________________________________");
 });
 Test($"read/write prefix", () =>
 {
@@ -80,6 +87,8 @@ Test($"test_ok", Succes);
 Test($"test_warn", Warn);
 Test($"test_fail", Fail);
 
+Test("linebreak", () => Succes("Hello, \nWorld"));
+
 Test($"test_ok", ()=>Succes("msg"));
 Test($"test_warn", () => Warn("msg"));
 Test($"test_fail", () => Fail("msg"));
@@ -93,17 +102,17 @@ Test("async_test_1", () =>
 });
 Test("async_test_2", () =>
 {
-    Task.Delay(40).Wait();
+    Task.Delay(400).Wait();
     Succes($"{sw.ElapsedMilliseconds}ms");
 });
 Test("async_test_3", () =>
 {
-    Task.Delay(40).Wait();
+    Task.Delay(400).Wait();
     Succes($"{sw.ElapsedMilliseconds}ms");
 });
 Test("async_test_4", () =>
 {
-    Task.Delay(20).Wait();
+    Task.Delay(200).Wait();
     Succes($"{sw.ElapsedMilliseconds}ms");
 });
 Test("async_test_5", () =>
@@ -112,52 +121,53 @@ Test("async_test_5", () =>
 });
 
 Section("Selftest");
+
 Test("selftest_IsEqual", () =>
 {
-    IsEqual(1, 1);
-    Throws<TestFailedException>(() => IsEqual(0, 1));
+    Assert.IsEqual(1, 1);
+    Assert.Throws<TestFailedException>(() => Assert.IsEqual(0, 1));
 
-    IsNotEqual(0, 1);
-    Throws<TestFailedException>(() => IsNotEqual(1, 1));
+    Assert.IsNotEqual(0, 1);
+    Assert.Throws<TestFailedException>(() => Assert.IsNotEqual(1, 1));
 });
-
 void MessageIs(Action action, string message)
 {
-    var err = ThrowsAndReturn<TestFailedException>(action);
-    IsEqual(err.Message, message);
+    var err = Assert.ThrowsContinue<TestFailedException>(action);
+    Assert.IsEqual(err.Message, message);
 }
 
 Test("selftest_IsEqualMessage", () =>
 {
-    MessageIs(() => IsEqual(0, 1), "Expected: 0 Actual: 1");
-    MessageIs(() => IsEqual(0, 1, "message"), "Expected: 0 Actual: 1 message");
-    MessageIs(() => IsEqual(0, 1, null, (x) => $"[{x}]"), "Expected: [0] Actual: [1]");
-    MessageIs(() => IsEqual(0, 1, "message", (x) => $"[{x}]"), "Expected: [0] Actual: [1] message");
+    MessageIs(() => Assert.IsEqual(0, 1), "Expected: 0 Actual: 1");
+    MessageIs(() => Assert.IsEqual(0, 1, "message"), "Expected: 0 Actual: 1 message");
+    MessageIs(() => Assert.IsEqual(0, 1, null, (x) => $"[{x}]"), "Expected: [0] Actual: [1]");
+    MessageIs(() => Assert.IsEqual(0, 1, "message", (x) => $"[{x}]"), "Expected: [0] Actual: [1] message");
 });
 
 Test("selftest_IsNotEqualMessage", () =>
 {
-    MessageIs(() => IsNotEqual(1, 1), "Not Expected: 1 Actual: 1");
-    MessageIs(() => IsNotEqual(1, 1, "message"), "Not Expected: 1 Actual: 1 message");
-    MessageIs(() => IsNotEqual(1, 1, null, (x) => $"[{x}]"), "Not Expected: [1] Actual: [1]");
-    MessageIs(() => IsNotEqual(1, 1, "message", (x) => $"[{x}]"), "Not Expected: [1] Actual: [1] message");
+    MessageIs(() => Assert.IsNotEqual(1, 1), "Not Expected: 1 Actual: 1");
+    MessageIs(() => Assert.IsNotEqual(1, 1, "message"), "Not Expected: 1 Actual: 1 message");
+    MessageIs(() => Assert.IsNotEqual(1, 1, null, (x) => $"[{x}]"), "Not Expected: [1] Actual: [1]");
+    MessageIs(() => Assert.IsNotEqual(1, 1, "message", (x) => $"[{x}]"), "Not Expected: [1] Actual: [1] message");
 });
 
 Test("selftest_IListToString", () =>
 {
     var list = new int[] { 0, 1, 2, 3 };
 
-    IsEqual(MessageUtils.IListToString(list, 6), "[4]{0,1,2,3}");
-    IsEqual(MessageUtils.IListToString(list, 4), "[4]{0,1,2,3}");
-    IsEqual(MessageUtils.IListToString(list, 2), "[4]{0,1...}");
+    Assert.IsEqual(MessageUtils.ListToString(list, 6), "[4]{0,1,2,3}");
+    Assert.IsEqual(MessageUtils.ListToString(list, 4), "[4]{0,1,2,3}");
+    Assert.IsEqual(MessageUtils.ListToString(list, 2), "[4]{0,1...}");
 });
 
 Test("selftest_AssertException", () =>
 {
-    Throws<IndexOutOfRangeException>("",() =>
+    var ex = new IndexOutOfRangeException();
+    Assert.Throws<IndexOutOfRangeException>(() =>
     {
-        throw new IndexOutOfRangeException();
-    });
+        throw ex;
+    }, ex.Message);
 });
 
 Test("selftest", () =>
@@ -167,9 +177,26 @@ Test("selftest", () =>
     var list3 = new int[] { 0, 1, 4, 5 };
     var list4 = new int[] { 0, 1 };
 
-    IEnumerableIsEqual(list1, list2);
+    void Fails(Action action, string? message = null)
+    {
+        var e = Assert.ThrowsContinue<TestFailedException>(action);
+        if (message != null)
+        {
+            Assert.IsEqual(message, e.Message);
+        }
+    }
+
+    Assert.EnumerablesAreEqual(list1, list1);
+    Assert.EnumerablesAreEqual(list1, list2);
+    Fails(() => Assert.EnumerablesAreEqual(list1, list3), "Item mismatch at position 2.");
+    Fails(() => Assert.EnumerablesAreEqual(list1, list4), "Item count mismatch at position 2.");
+
+    Assert.ListsAreEqual(list1, list1);
+    Assert.ListsAreEqual(list1, list2);
+    Fails(() => Assert.ListsAreEqual(list1, list3), "Expected: [4]{0,1,2,3} Actual: [4]{0,1,4,5}");
+    Fails(() => Assert.ListsAreEqual(list1, list4), "Item count mismatch at position 2.");
 });
 
-RunTestsSynchronously();
-//RunTests();
-//RunTestsSynchronously();
+RunTests();
+
+Printer.PrintSummary(new TestSummary());

@@ -15,8 +15,9 @@ public class TestSummary
     public int Warning { get; private set; }
     public int Failure { get; private set; }
     public int Error { get; private set; }
+    public int Executed => Total - Unexecuted;
 
-    public void Result(TestStatus result)
+    public void Count(TestStatus result)
     {
         switch (result)
         {
@@ -37,13 +38,29 @@ public class TestSummary
                 break;
         }
 
-        Total = Success + Failure + Error + Unexecuted;
+        Total = Success + Warning + Failure + Error + Unexecuted;
+    }
+
+    public void Count(IEnumerable<Section> sections)
+    {
+        foreach (var section in sections)
+        {
+            Count(section);
+        }
     }
 
     public void Count(Section section)
     {
-        foreach (var test in section.TestCases) {
-            Result(test.Status);
+        foreach (var test in section.TestCases)
+        {
+            Count(test.Status);
         }
+    }
+
+    public static TestSummary NewCount(IEnumerable<Section> sections)
+    {
+        var summary = new TestSummary();
+        summary.Count(sections);
+        return summary;
     }
 }

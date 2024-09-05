@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using Grille.ConsoleTestLib.IO;
 
 namespace Grille.ConsoleTestLib;
 
@@ -19,7 +20,12 @@ public class Section
         TestCases = new();
     }
 
-    public void Start()
+    public void Add(TestCase test)
+    {
+        TestCases.Add(test);
+    }
+
+    public void RunAsync()
     {
         foreach (var test in TestCases)
         {
@@ -27,36 +33,12 @@ public class Section
         }
     }
 
-    public void Add(TestCase test)
+    public void RunSynchronously()
     {
-        TestCases.Add(test);
-    }
-
-    public void RunSynchronouslyAndPrint(ITestPrinter printer)
-    {
-        printer.PrintSectionBegin(this);
-
         foreach (var test in TestCases)
         {
             test.RunSynchronously();
-            printer.PrintTest(test);
         }
-
-        printer.PrintSectionEnd(this);
-    }
-
-    public void Print(ITestPrinter printer)
-    {
-        printer.PrintSectionBegin(this);
-
-        for (var i = 0; i < TestCases.Count; i++)
-        {
-            var test = TestCases[i];
-            test.Wait();
-            printer.PrintTest(test);
-        }
-
-        printer.PrintSectionEnd(this);
     }
 
     public void Rethrow()

@@ -6,7 +6,7 @@
 		<RootNamespace>Grille.ConsoleTestLib</RootNamespace>
 		<PackageLicenseFile>LICENSE</PackageLicenseFile>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
-		<Version>0.5.0</Version>
+		<Version>0.6.0</Version>
 		<LangVersion>12</LangVersion>
 		<Authors>Paul Hirch</Authors>
 		<Description>Library to write standalone console programs for testing.</Description>
@@ -16,17 +16,23 @@
 		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
 		<Copyright>Copyright (c) 2024 Paul Hirch</Copyright>
 		<RepositoryUrl>https://github.com/Grille/ConsoleTestLib</RepositoryUrl>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-		<DocumentationFile></DocumentationFile>
+		<IncludeSymbols>true</IncludeSymbols>
+		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 		<OutputPath>bin\Debug\</OutputPath>
+		<DocumentationFile>bin\Debug\Documentation.xml</DocumentationFile>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
 		<OutputPath>bin\Release\</OutputPath>
-		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<DocumentationFile>bin\Release\Documentation.xml</DocumentationFile>
+	</PropertyGroup>
+
+	<PropertyGroup>
+	  <NoWarn>1701;1702;CS1591</NoWarn>
 	</PropertyGroup>
 
 	<ItemGroup>
