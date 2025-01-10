@@ -19,7 +19,7 @@ public static class TestResult
 
     /// <summary>Throws a <see langword="new"/> <see cref="TestSuccessException"/>().</summary>
     [DoesNotReturn]
-    public static void Succes() => throw new TestSuccessException();
+    public static void Success() => throw new TestSuccessException();
 
     /// <summary>Throws a <see langword="new"/> <see cref="TestFailedException"/>(message).</summary>
     [DoesNotReturn]
@@ -31,5 +31,5 @@ public static class TestResult
 
     /// <summary>Throws a <see langword="new"/> <see cref="TestSuccessException"/>(message).</summary>
     [DoesNotReturn]
-    public static void Succes(string message) => throw new TestSuccessException(message);
+    public static void Success(string message) => throw new TestSuccessException(message);
 }

@@ -36,7 +36,7 @@ int i = 0;
 Test($"value on task create '{i}'", () =>
 {
     Fail("hm");
-    Succes($"value on task run '{i}'");
+    Success($"value on task run '{i}'");
 });
 
 Section("Basic");
@@ -48,7 +48,7 @@ for (i = 0; i < 4; i++)
     Test($"test_{number}", () =>
     {
         if (number == 1)
-            Succes("number is 1");
+            Success("number is 1");
         if (number == 3)
             throw new Exception("number is 3");
         if (number > 1)
@@ -75,7 +75,7 @@ Test($"read/write prefix", () =>
 });
 Test($"read/write prefix", () =>
 {
-    Succes();
+    Success();
 });
 
 Test($"test_return_invalid", () =>
@@ -83,13 +83,13 @@ Test($"test_return_invalid", () =>
     return (TestStatus)8;
 });
 
-Test($"test_ok", Succes);
+Test($"test_ok", Success);
 Test($"test_warn", Warn);
 Test($"test_fail", Fail);
 
-Test("linebreak", () => Succes("Hello, \nWorld"));
+Test("linebreak", () => Success("Hello, \nWorld"));
 
-Test($"test_ok", ()=>Succes("msg"));
+Test($"test_ok", ()=>Success("msg"));
 Test($"test_warn", () => Warn("msg"));
 Test($"test_fail", () => Fail("msg"));
 
@@ -98,26 +98,26 @@ var sw = Stopwatch.StartNew();
 Section("Async");
 Test("async_test_1", () =>
 {
-    Succes($"{sw.ElapsedMilliseconds}ms");
+    Success($"{sw.ElapsedMilliseconds}ms");
 });
 Test("async_test_2", () =>
 {
     Task.Delay(400).Wait();
-    Succes($"{sw.ElapsedMilliseconds}ms");
+    Success($"{sw.ElapsedMilliseconds}ms");
 });
 Test("async_test_3", () =>
 {
     Task.Delay(400).Wait();
-    Succes($"{sw.ElapsedMilliseconds}ms");
+    Success($"{sw.ElapsedMilliseconds}ms");
 });
 Test("async_test_4", () =>
 {
     Task.Delay(200).Wait();
-    Succes($"{sw.ElapsedMilliseconds}ms");
+    Success($"{sw.ElapsedMilliseconds}ms");
 });
 Test("async_test_5", () =>
 {
-    Succes($"{sw.ElapsedMilliseconds}ms");
+    Success($"{sw.ElapsedMilliseconds}ms");
 });
 
 Section("Selftest");
